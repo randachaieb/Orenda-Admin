@@ -27,7 +27,9 @@ class Offers extends React.Component {
         isModalVisiblDelete:false,
         data : [],
         item: null,
-        namee:null
+        namee:null,
+        lastEdited:null,
+        lastDeleted:null
       };
       this.handleOk = this.handleOk.bind(this);
       this.handleOkSubCategory = this.handleOkSubCategory.bind(this);
@@ -94,13 +96,14 @@ class Offers extends React.Component {
       };
     
       showModalDelete  = (event) => {
-        axios.get('http://localhost:5000/api/v1/categories/offerCategoriesid/' + event)
+        axios.get('http://localhost:5000/api/v1/categories/offerCategories/' + event)
             .then(response => {
               console.log(response.data);
                 this.setState({
                   id:event,
-                    name: response.data.offer.name,
-                    isModalVisiblDelete:true
+                    name: response.data.name,
+                    isModalVisiblDelete:true,
+                    lastDeleted:response.data._id,
                 })
                 console.log(response.data+event);
             })
@@ -111,7 +114,7 @@ class Offers extends React.Component {
      
     };
     handleOkDelete  = (event) => {
-      axios.delete("http://localhost:5000/api/v1/categories/deleteOffer",
+      axios.delete("http://localhost:5000/api/v1/categories/deleteOffer/"+this.state.lastDeleted,
       {
  data: {"id": event }
 })
@@ -128,13 +131,14 @@ class Offers extends React.Component {
        this.setState({isModalVisiblDelete:false})
       };
       showModalEdit  = (event) => {
-        axios.get('http://localhost:5000/api/v1/categories/offerCategoriesid/' + event)
+        axios.get('http://localhost:5000/api/v1/categories/offerCategories/' + event)
         .then(response => {
           console.log(response.data);
             this.setState({
               id:event,
-              namee: response.data.offer.name,
-                isModalVisiblEdit:true
+              name: response.data.name,
+                isModalVisiblEdit:true,
+              lastEdited:response.data._id,
             })
             console.log(response.data+event);
         })
@@ -147,10 +151,9 @@ class Offers extends React.Component {
     const formData = {
       name: this.state.namee
     }
-  
-    axios.patch('http://localhost:5000/api/v1/categories/updateOffer/'+event,formData)
+    axios.patch('http://localhost:5000/api/v1/categories/updateOffer/'+this.state.lastEdited,formData)
         .then(res => {
-            console.log(res.data)
+            console.log(res)
       
         });
       this.setState({isModalVisiblEdit:false})
@@ -206,7 +209,7 @@ class Offers extends React.Component {
     // data right away
     this.getData();
     // Now we need to make it run at a specified interval
-    setInterval(this.getData, 1000); // runs every 1 second.
+    setInterval(this.getData, 19000); // runs every 1 second.
   }
   getData = () => {
   axios.get('http://localhost:5000/api/v1/categories/offerCategories')
@@ -264,11 +267,11 @@ class Offers extends React.Component {
       placeholder=" Sub-category Name" />
       </form>
       </Modal>
-      <Modal title="Edit Offer" visible={this.state.isModalVisiblEdit} onOk={(e) =>this.handleOkEdit(this.state.id)} onCancel={this.handleCancelEdit}>
+      <Modal title="Edit Offer" visible={this.state.isModalVisiblEdit} onOk={(e) =>this.handleOkEdit(this.state.lastEdited)} onCancel={this.handleCancelEdit}>
       <Input placeholder="Name" 	onChange={this.handleChangenamee} value={this.state.namee} /><br/><br/>
 
       </Modal>
-      <Modal title="Delete Offer" visible={this.state.isModalVisiblDelete} onOk={(e) => this.handleOkDelete(this.state.id)} onCancel={this.handleCancelDelete}>
+      <Modal title="Delete Offer" visible={this.state.isModalVisiblDelete} onOk={(e) => this.handleOkDelete(this.state.data._id)} onCancel={this.handleCancelDelete}>
           <p>
             Are you sure that you want to delete {this.state.name}?
           </p>
