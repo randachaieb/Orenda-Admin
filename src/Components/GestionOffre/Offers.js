@@ -94,7 +94,6 @@ class Offers extends React.Component {
      handleCancelSubCategory = () => {
        this.setState({isModalVisibleSubCategory:false})
       };
-    
       showModalDelete  = (event) => {
         axios.get('http://localhost:5000/api/v1/categories/offerCategories/' + event)
             .then(response => {
@@ -133,20 +132,47 @@ class Offers extends React.Component {
       showModalEdit  = (event) => {
         axios.get('http://localhost:5000/api/v1/categories/offerCategories/' + event)
         .then(response => {
-          console.log(response.data);
+          //console.log(response.data);
             this.setState({
               id:event,
               name: response.data.name,
                 isModalVisiblEdit:true,
               lastEdited:response.data._id,
             })
-            console.log(response.data+event);
+            //console.log(response.data+event);
         })
         .catch((error) => {
             console.log(error);
         })
     };
-    
+    showModalSubEdit = (event) => {
+      //console.log(event)
+      //let tmp_holder ;
+      axios.get('http://localhost:5000/api/v1/categories/subCategory/all')
+      .then(response =>{
+
+        response.data.forEach(repo =>{
+        Object.entries(repo).forEach(([key, value]) =>{
+          if(event === value)
+            this.setState({
+              id:event,
+              name:response.data.name,
+              isModalVisiblEdit:true,
+            })
+            //console.log(`${key}: ${value}`);
+        })
+      })
+      })
+      
+      /*for(const key in tmp_holder){
+          if(event == tmp_holder[key]){
+            console.log("works")
+          }
+      }*/
+    }
+    handleCancelEditSub = () =>{
+      this.setState({isModalVisiblEdit:false});
+    };
    handleOkEdit  = (event) => {
     const formData = {
       name: this.state.namee
@@ -275,8 +301,11 @@ class Offers extends React.Component {
           <p>
             Are you sure that you want to delete {this.state.name}?
           </p>
-     
       </Modal>
+      <Modal title="Edit Sub Category" visible={this.state.isModalVisiblEdit} onOk={this.handleOkSubCategory} onCancel={this.handleCancelEditSub}>
+         <Input placeholder="Name" 	onChange={this.handleChangenamesub} value={this.state.namee} /><br/><br/>
+      </Modal>
+      
       <TableContainer >
         <Table stickyHeader aria-label="sticky table">
           <TableHead>
@@ -310,8 +339,8 @@ class Offers extends React.Component {
               {tag.name}
             
             
-              <EditOutlined key="edit" onClick={(e) => this.showModalEdit(tag._id)}/>
-              <DeleteOutlined  key="delete" onClick={(e) => this.showModalDelete(tag._id)}/>
+              <EditOutlined key="edit" onClick={(e) => this.showModalSubEdit(tag._id)}/>
+              <DeleteOutlined  key="delete" onClick={(e) => this.showModalSubDelete(tag._id)}/>
             </Tag>
              
             

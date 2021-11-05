@@ -164,11 +164,11 @@ class Cards extends React.Component {
     // data right away
     this.getData();
     // Now we need to make it run at a specified interval
-    setInterval(this.getData, 1000); // runs every 1 second.
+    setInterval(this.getData, 18000); // runs every 1 second.
   }
   getData = () => {
     axios
-      .get(' axios.get("http://localhost:5000/api/v1/card/all')
+      .get('http://localhost:5000/api/v1/card/all')
       .then((response) => {
         if (response.data.length > 0) {
           this.setState({
