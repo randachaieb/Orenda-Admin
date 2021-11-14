@@ -22,6 +22,10 @@ class Categories extends React.Component {
       isModalVisiblEdit: false,
       isModalVisiblDelete: false,
       isModalVisibleSubCategory: false,
+      isModalVisiblDeleteCategory: false,
+      isModalVisiblUpdateCategory: false,
+      isModalVisiblUpdateSubCategory: false,
+      categoryToUpdate: null,
       data: [],
       name: null,
       category: "choose",
@@ -36,6 +40,11 @@ class Categories extends React.Component {
     this.formSubmit = this.formSubmit.bind(this);
     this.formSubmitSub = this.formSubmitSub.bind(this);
     this.handleOkSubCategory = this.handleOkSubCategory.bind(this);
+    this.showModalDeleteCategory = this.showModalDeleteCategory.bind(this);
+    this.handleCancelDeleteCategory = this.handleCancelDeleteCategory.bind(
+      this
+    );
+    this.handleUpdateCategory = this.handleUpdateCategory.bind(this);
   }
   showModal = () => {
     this.setState({ isModalVisible: true });
@@ -64,38 +73,73 @@ class Categories extends React.Component {
   showModalSubCategory = () => {
     this.setState({ isModalVisibleSubCategory: true });
   };
-  showModalDelete = (event) => {
-    axios
-      .get(
-        "http://localhost:5000/api/v1/categories/PlacesCategoriesid/" + event
-      )
-      .then((response) => {
-        console.log(response.data);
-        this.setState({
-          id: event,
-          name: response.data.place.name,
-          isModalVisiblDelete: true,
-        });
-        console.log(response.data + event);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+  showModalDelete = (id) => {
+    this.setState({ isModalVisiblDelete: true, id });
   };
-  handleOkDelete = (event) => {
+  showModalDeleteCategory = (id) => {
+    this.setState({ isModalVisiblDeleteCategory: true, id });
+  };
+  // showModalDelete = (event) => {
+  //   axios
+  //     .get(
+  //       "http://localhost:5000/api/v1/categories/PlacesCategoriesid/" + event
+  //     )
+  //     .then((response) => {
+  //       console.log(response.data);
+  //       this.setState({
+  //         id: event,
+  //         name: response.data.place.name,
+  //         isModalVisiblDelete: true,
+  //       });
+  //       console.log(response.data + event);
+  //     })
+  //     .catch((error) => {
+  //       console.log(error);
+  //     });
+  // };
+  handleOkUpdateCategory = () => {
+    console.log(this.state.id);
+  };
+  handleOkDeleteCategory = () => {
     axios
-      .delete("http://localhost:5000/api/v1/categories/delete", {
-        data: { id: event },
-      })
+      .delete(
+        "http://localhost:5000/api/v1/categories/deleteOffer/" + this.state.id
+      )
       .then((res) => {
         console.log(res.data);
-        this.setState({
-          isModalVisiblDelete: false,
-        });
+        this.setState(
+          {
+            isModalVisiblDeleteCategory: false,
+            id: null,
+          },
+          () => this.getData()
+        );
+      });
+  };
+  handleOkDelete = () => {
+    axios
+      .delete(
+        "http://localhost:5000/api/v1/categories/subCategory/" + this.state.id
+      )
+      .then((res) => {
+        console.log(res.data);
+        this.setState(
+          {
+            isModalVisiblDelete: false,
+            id: null,
+          },
+          () => this.getData()
+        );
       });
   };
   handleCancelDelete = () => {
     this.setState({ isModalVisiblDelete: false });
+  };
+  handleCancelDeleteCategory = () => {
+    this.setState({ isModalVisiblDeleteCategory: false });
+  };
+  handleUpdateCategory = () => {
+    this.setState({ isModalVisiblUpdateCategory: false });
   };
   showModalEdit = (event) => {
     axios
@@ -170,13 +214,13 @@ class Categories extends React.Component {
     event.preventDefault();
     const formData = {
       name: this.state.name,
-      count: 0,
+      // count: 0,
     };
-
     axios
       .post("http://localhost:5000/api/v1/categories/placeCategory", formData)
       .then((res) => {
         console.log(res.data);
+        this.getData();
       });
     this.setState({ isModalVisible: false });
   }
@@ -195,6 +239,7 @@ class Categories extends React.Component {
       )
       .then((res) => {
         console.log(res.data);
+        this.getData();
       });
     this.setState({ isModalVisibleSubCategory: false });
   }
@@ -203,7 +248,7 @@ class Categories extends React.Component {
     // data right away
     this.getData();
     // Now we need to make it run at a specified interval
-    setInterval(this.getData, 1000); // runs every 1 second.
+    // setInterval(this.getData, 1000); // runs every 1 second.
   }
   getData = () => {
     axios
@@ -232,6 +277,52 @@ class Categories extends React.Component {
     this.setState({
       namee: event.target.value,
     });
+  };
+
+  handleChangeUpdate = (e) => {
+    this.setState({
+      categoryToUpdate: {
+        ...this.state.categoryToUpdate,
+        name: e.target.value,
+      },
+    });
+  };
+  formSubmitUpdate = (e) => {
+    e.preventDefault();
+    axios
+      .patch(
+        "http://localhost:5000/api/v1/categories/updateOffer/" +
+          this.state.categoryToUpdate._id,
+        { name: this.state.categoryToUpdate.name }
+      )
+      .then((res) => {
+        this.setState({ isModalVisiblUpdateCategory: false }, () =>
+          this.getData()
+        );
+      });
+  };
+
+  handleChangeUpdateSubcategory = (e) => {
+    this.setState({
+      subCategoryToUpdate: {
+        ...this.state.subCategoryToUpdate,
+        name: e.target.value,
+      },
+    });
+  };
+  formSubmitUpdateSubCategory = (e) => {
+    e.preventDefault();
+    axios
+      .put(
+        "http://localhost:5000/api/v1/categories/subCategory/" +
+          this.state.subCategoryToUpdate._id,
+        { name: this.state.subCategoryToUpdate.name }
+      )
+      .then(() => {
+        this.setState({ isModalVisiblUpdateSubCategory: false }, () =>
+          this.getData()
+        );
+      });
   };
   render() {
     return (
@@ -325,6 +416,61 @@ class Categories extends React.Component {
         >
           <p>Are you sure that you want to delete {this.state.name}?</p>
         </Modal>
+        <Modal
+          title="Delete Category"
+          visible={this.state.isModalVisiblDeleteCategory}
+          onOk={(e) => this.handleOkDeleteCategory(this.state.id)}
+          onCancel={this.handleCancelDeleteCategory}
+        >
+          <p>Are you sure that you want to delete {this.state.name}?</p>
+        </Modal>
+        <Modal
+          title="Update Category"
+          visible={this.state.isModalVisiblUpdateCategory}
+          footer={[
+            <Button key="cancel" onClick={this.handleUpdateCategory}>
+              Cancel
+            </Button>,
+            <Button type="submit" onClick={this.formSubmitUpdate}>
+              Update
+            </Button>,
+          ]}
+        >
+          <form onSubmit={this.formSubmitUpdate}>
+            <Input
+              placeholder="category Name"
+              id="Name"
+              onChange={this.handleChangeUpdate}
+              value={this.state.categoryToUpdate?.name || ""}
+            />
+          </form>
+        </Modal>
+        <Modal
+          title="Update SubCategory"
+          visible={this.state.isModalVisiblUpdateSubCategory}
+          footer={[
+            <Button
+              key="cancel"
+              onClick={() =>
+                this.setState({ isModalVisiblUpdateSubCategory: false })
+              }
+            >
+              Cancel
+            </Button>,
+            <Button type="submit" onClick={this.formSubmitUpdateSubCategory}>
+              Update
+            </Button>,
+          ]}
+        >
+          <form onSubmit={this.formSubmitUpdateSubCategory}>
+            <Input
+              placeholder="subcategory Name"
+              id="Name"
+              onChange={this.handleChangeUpdateSubcategory}
+              value={this.state.subCategoryToUpdate?.name || ""}
+            />
+          </form>
+        </Modal>
         <TableContainer>
           <Table stickyHeader aria-label="sticky table">
             <TableHead>
@@ -355,11 +501,20 @@ class Categories extends React.Component {
 
                                 <EditOutlined
                                   key="edit"
-                                  onClick={(e) => this.showModalEdit(tag._id)}
+                                  onClick={(e) => {
+                                    this.setState({
+                                      subCategoryToUpdate: tag,
+                                      isModalVisiblUpdateSubCategory: true,
+                                    });
+                                  }}
                                 />
+                                {/* <EditOutlined
+                                  key="edit"
+                                  onClick={(e) => this.showModalEdit(tag._id)}
+                                /> */}
                                 <DeleteOutlined
                                   key="delete"
-                                  onClick={(e) => this.showModalDelete(tag._id)}
+                                  onClick={() => this.showModalDelete(tag._id)}
                                 />
                               </Tag>
                             );
@@ -369,13 +524,23 @@ class Categories extends React.Component {
                   </TableCell>
                   <TableCell align="left">
                     <Space size="middle">
-                      <EditOutlined
+                      {/* <EditOutlined
                         key="edit"
                         onClick={(e) => this.showModalEdit(row._id)}
+                      /> */}
+                      <EditOutlined
+                        key="edit"
+                        onClick={(e) => {
+                          this.setState({
+                            id: row._id,
+                            isModalVisiblUpdateCategory: true,
+                            categoryToUpdate: row,
+                          });
+                        }}
                       />
                       <DeleteOutlined
                         key="delete"
-                        onClick={(e) => this.showModalDelete(row._id)}
+                        onClick={(e) => this.showModalDeleteCategory(row._id)}
                       />
                     </Space>
                   </TableCell>
